@@ -12,3 +12,148 @@ drive.mount('/content/drive')
 !pip install catboost
 !pip install spectral
 
+#importing necessary libraries
+import pandas as pd
+import numpy as np
+from scipy.stats import pearsonr
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score
+from scipy.stats import pearsonr
+from google.colab import files
+from tensorflow import keras
+from tensorflow.keras import layers
+from catboost import CatBoostRegressor
+import spectral
+
+#import ML libraries
+from xgboost import XGBRegressor
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.svm import SVR
+from sklearn.ensemble import BaggingRegressor
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.linear_model import ElasticNet
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF
+import matplotlib.pyplot as plt
+
+
+#Rescaling wisp data to fit that of bayspec
+# Function to upload and read file
+# uploaded=files.upload() # Use this when the data is not uploaded into the same folder.
+
+# Upload and read files
+df_1 = pd.read_csv('X_Values_modified.csv')
+df_2 = pd.read_csv('Y_Values.csv')
+df_3 = pd.read_csv('Original_spectra_example.csv', header=None)
+df_4 = pd.read_csv('Y_Values_with_standards.csv', header=0)
+
+# Print shapes
+print(f"Shape of X_Values: {df_1.shape}")
+print(f"Shape of Y_Values: {df_2.shape}")
+print(f"Shape of the OCIF wavelengths: {df_3.shape}")
+
+
+# Convert column names of df_1 to float type for interpolation
+df_1.columns = df_1.columns.astype(float)
+
+# Transpose df_1 for easier manipulation
+df_1 = df_1.T
+
+# Convert df_3 to a flat array of wavelengths
+wavelengths = df_3.values.flatten()
+
+# Reindex df_1 to the new wavelengths, using interpolation to fill missing values
+df_1_interp = df_1.reindex(df_1.index.union(wavelengths)).interpolate(method='index').loc[wavelengths]
+
+# Transpose df_1_interp back to original form
+df_1_interp = df_1_interp.T
+
+# Print the interpolated DataFrame
+# print(df_1_interp)
+
+# Import the required library
+import matplotlib.pyplot as plt
+
+# Create a new figure
+plt.figure(figsize=(10,6))
+
+# Plot the data
+for i in range(len(df_1_interp)):
+    plt.plot(df_1_interp.columns, df_1_interp.iloc[i, :])
+
+# Add a title
+plt.title('Reflectance collected by Wisp 3')
+
+# Add labels
+plt.xlabel('Wavelength')
+plt.ylabel('Reflection')
+
+# Show the plot
+plt.show()
+
+# Import the required libraries
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import matplotlib.patheffects as path_effects
+
+# Remove the first row from the DataFrame
+df = df_4.iloc[1:, :]
+
+# Convert the data to numeric type
+df = df.apply(pd.to_numeric, errors='coerce')
+
+# Select the data from the 3rd column onwards
+df = df.iloc[:, 2:]
+
+# Scale the data
+scaled_df = df.copy()
+multipliers = []
+for column in df.columns:
+    # Calculate the multiplier as a power of 10
+    multiplier = 10 ** np.floor(np.log10(df[column].max() / 10))
+    # Scale the column data
+    scaled_df[column] = df[column] / multiplier
+    # Store the multiplier for later use
+    multipliers.append(multiplier)
+
+# Create a box plot for each column
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=scaled_df)
+
+# Rotate x-axis labels for better readability
+plt.xticks(rotation=90)
+
+# Add the scaling multiplier as text annotations at the top of the box plot
+for i, (column, multiplier) in enumerate(zip(scaled_df.columns, multipliers)):
+    # Calculate the power of 10
+    power = int(np.log10(multiplier))
+    # Create the text annotation with the power as a superscript
+    text = plt.text(i, 105, f'x10$^{power}$', ha='center', rotation=90, fontsize=10)
+    # Add a white outline to the text to make it more readable
+    text.set_path_effects([path_effects.Stroke(linewidth=3, foreground='white'), path_effects.Normal()])
+
+# Plot the second row as a red line in every box plot
+second_row = scaled_df.iloc[1, :]
+plt.plot(range(len(scaled_df.columns)), second_row, 'r*', label='Maximum permissible limit in potable water')
+
+# Add a title with adjusted position
+plt.title('In-situ concentration of various Water Quality parameters', y=1.1, fontsize = 15)
+
+# Add a vertical grid to the plot
+plt.grid(axis='x', color='gray', linestyle='-', linewidth=1, alpha = 0.4)
+
+# Add a legend at the bottom
+plt.legend(loc='upper center', bbox_to_anchor=(0.2, -0.3), fancybox=True, shadow=True, ncol=5)
+
+# Show the plot
+plt.show()
+
+
+
+
+
