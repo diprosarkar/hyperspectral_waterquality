@@ -7,3 +7,8 @@ drive.mount('/content/drive')
 #changing the processing space:
 %cd /content/drive/MyDrive/Prediction_hyperspectral/Hyperspectral_data/Full_hridaypur
 
+#installing the required packages
+%%capture
+!pip install catboost
+!pip install spectral
+
