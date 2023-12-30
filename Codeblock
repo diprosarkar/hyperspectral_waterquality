@@ -1,0 +1,9 @@
+# ***Generating the environment for processing***
+
+# mounting the gdrive
+from google.colab import drive
+drive.mount('/content/drive')
+
+#changing the processing space:
+%cd /content/drive/MyDrive/Prediction_hyperspectral/Hyperspectral_data/Full_hridaypur
+
